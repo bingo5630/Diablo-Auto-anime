@@ -1,0 +1,6 @@
+services:
+  - type: worker
+    name: autome-telegram-bot
+    runtime: python
+    buildCommand: ""
+    startCommand: "python main.py"
