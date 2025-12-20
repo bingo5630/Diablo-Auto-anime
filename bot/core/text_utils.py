@@ -18,7 +18,7 @@ import html  # for escaping captions
 
 CAPTION_FORMAT = """
 CAPTION_FORMAT = """
-<b>➥ {title} </b>
+<b> {title} </b>
 ╭━━━━━━━━━━━━━━━━━━━━━━━
 <b>➣ Season: {anime_season}</b>
 <b>➣ Episodes: {ep_no}</b>
