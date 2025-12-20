@@ -19,13 +19,13 @@ import html  # for escaping captions
 CAPTION_FORMAT = """
 CAPTION_FORMAT = """
 <b> {title} </b>
-╭━━━━━━━━━━━━━━━━━━━━━━━
+━━━━━━━━━━━━━━━━━━━━━━━
 <b>➣ Season: {anime_season}</b>
 <b>➣ Episodes: {ep_no}</b>
 <b>➣ Total Episode: {t_eps}</b>
 <b>➣ Audio: Japanese [English Sub]</b>
 <b>➣ Quality: Multi Quality</b>
-╰━━━━━━━━━━━━━━━━━━━━━━━
+━━━━━━━━━━━━━━━━━━━━━━━
 <b>➥ Powered By: @Anime_Mines</b> """
 
 GENRES_EMOJI = {
