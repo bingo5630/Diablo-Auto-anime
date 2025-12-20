@@ -17,16 +17,16 @@ from aiofiles.os import path as aiopath
 import html  # for escaping captions
 
 CAPTION_FORMAT = """
-<b> {title}</b>
-──────────────────────
-<b>➥ Season:</b> {anime_season}
-<b>➤ Episode:</b> {ep_no}
-<b>➤ Status:</b> {status}
-<b>➥ Genres:</b> {genres}
-──────────────────────
-
-<b>📘 Synopsis:</b>
-<i>{plot}</i>"""
+CAPTION_FORMAT = """
+<b>〄 {title} </b>
+╭━━━━━━━━━━━━━━━━━━━━━━━
+<b>➣ Season: {anime_season}</b>
+<b>➣ Episodes: {ep_no}</b>
+<b>➣ Total Episode: {t_eps}</b>
+<b>➣ Audio: Japanese [English Sub]</b>
+<b>➣ Quality: Multi Quality</b>
+╰━━━━━━━━━━━━━━━━━━━━━━━
+<b>➥ Powered By: @Anime_Mines</b> """
 
 GENRES_EMOJI = {
     "Action": "👊", "Adventure": choice(['🪂', '🧗‍♀️', '🗺️']), "Comedy": "🤣",
