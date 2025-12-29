@@ -29,6 +29,8 @@ import time
 from datetime import datetime
 from motor.motor_asyncio import AsyncIOMotorClient
 from pyrogram.types import Message
+from bot.plugins.shortner import get_short
+from bot.core.database import db
 
 Var.BAN_SUPPORT = f"{Var.BAN_SUPPORT}"
 
@@ -142,6 +144,74 @@ async def start_msg(client: Client, message: Message):
         return await not_joined(client, message)
 
     txtargs = message.text.split()
+
+    # 4. Check if shortner is enabled
+    # Check for verification prefix
+    if len(txtargs) > 1 and txtargs[1].startswith("yu3elk") and txtargs[1].endswith("7"):
+        try:
+            # Verify user
+            await db.verify_user(user_id)
+            # Extract actual base64 string
+            base64_string = txtargs[1][6:-1]
+            txtargs[1] = base64_string # Restore actual payload for further processing
+            message.text = message.text.replace(f"yu3elk{base64_string}7", base64_string)
+            await message.reply("<b>✅ You have been successfully verified!</b>")
+        except Exception as e:
+            logger.error(f"Verification error: {e}")
+
+    # 5. Check shortener logic
+    shortner_status = await db.get_shortner_status()
+    is_user_verified = await db.is_user_verified(user_id)
+    is_user_premium = await check_admin(None, client, message)
+    OWNER_ID = Var.ADMINS[0] if Var.ADMINS else 0
+    is_user_owner = user_id == OWNER_ID or user_id in Var.ADMINS
+
+    if shortner_status and not is_user_verified and not is_user_owner and not is_user_premium and len(txtargs) > 1:
+        try:
+            base64_string = txtargs[1]
+            # Prevent double shortening if already verified (logic above handles verification)
+            # But here we are if NOT verified.
+
+            # Use bot username dynamically
+            me = await client.get_me()
+            target_url = f"https://t.me/{me.username}?start=yu3elk{base64_string}7"
+            short_link = await get_short(target_url, client)
+
+            settings = await db.get_shortner_settings()
+            tutorial_link = settings.get('tutorial_link', "https://t.me/How_to_Download_7x/26")
+
+            short_photo = Var.START_PIC
+            short_caption = f"""<b>⚠️ <u>Action Required</u> ⚠️</b>
+
+<b>You need to verify your account to access the files!</b>
+
+<b>1. Click on 'Open Link' button.</b>
+<b>2. Complete the shortener process.</b>
+<b>3. You will be redirected back here.</b>
+<b>4. Click 'Start' to get your files!</b>
+
+<b><i>Verification is valid for {await db.get_verification_time() // 3600} hours.</i></b>"""
+
+            await client.send_photo(
+                chat_id=message.chat.id,
+                photo=short_photo,
+                caption=short_caption,
+                reply_markup=InlineKeyboardMarkup([
+                    [
+                        InlineKeyboardButton("• ᴏᴘᴇɴ ʟɪɴᴋ", url=short_link),
+                        InlineKeyboardButton("ᴛᴜᴛᴏʀɪᴀʟ •", url=tutorial_link)
+                    ]
+                ])
+            )
+            return # Stop processing
+
+        except Exception as e:
+            logger.warning(f"Shortener failed: {e}")
+            # If shortener fails, we might want to allow access or show error.
+            # Letting it proceed might be safer for user experience if external API is down.
+            # But user wants verification.
+            # return await message.reply("Couldn't generate short link.")
+            pass
     temp = await sendMessage(message, "<b>Pʟᴇᴀsᴇ ᴡᴀɪᴛ</b>")
 
     if len(txtargs) <= 1:
@@ -310,3 +380,4 @@ async def add_task(client, message):
 async def bcmd(client: Client, message: Message):        
     reply_markup = InlineKeyboardMarkup([[InlineKeyboardButton("• ᴄʟᴏsᴇ •", callback_data="close")]])
     await message.reply(text=botmaker.CMD_TXT, reply_markup=reply_markup, quote=True)
+            
