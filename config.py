@@ -25,7 +25,6 @@ class Var:
     API_ID = getenv("API_ID", "26944587")
     API_HASH = getenv("API_HASH", "7261a455f2a6159b8a2fbfecd1a63004")
     BOT_TOKEN = getenv("BOT_TOKEN", "8465648391:AAHUbSqqrpS3NyHLFqV1vqL-oZL1Yz746eQ")
-")
     DB_URI = getenv("DB_URI", "mongodb+srv://sn117020:g3tULq1KLqxgzfgd@cluster0.ju3tzdx.mongodb.net/mybotdb?retryWrites=true&w=majority&appName=Autouploadribot")
     DB_NAME = getenv("DB_NAME", "Autoupload_ribot")
     BAN_SUPPORT = getenv("BAN_SUPPORT", "https://t.me/PlayDise")
