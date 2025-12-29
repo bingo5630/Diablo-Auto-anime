@@ -75,5 +75,3 @@ logging.getLogger("pyrogram").setLevel(logging.WARNING)
 d
 ef LOGGER(name: str) -> logging.Logger:
     return logging.getLogger(name)
-
-Here's Mine config.py please add that and send me I will paste there
