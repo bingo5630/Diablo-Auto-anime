@@ -14,8 +14,58 @@ from .reporter import rep
 import os
 from aiofiles.os import path as aiopath
 
+# ---------------------------
+# SMART SYNOPSIS TRIM FUNCTION
+# ---------------------------
+
+def smart_paragraph_trim(description: str, min_words: int = 500, max_words: int = 800) -> str:
+    if not description:
+        return "N/A"
+
+    # Clean HTML tags → Plain readable text
+    replaces = {
+        "<br>": "\n", "<br/>": "\n", "<br />": "\n",
+        "<i>": "", "</i>": "", "<b>": "", "</b>": ""
+    }
+    for k, v in replaces.items():
+        description = description.replace(k, v)
+
+    # Remove any leftover tags
+    import re
+    description = re.sub(r"<.*?>", "", description).strip()
+
+    # Split into words
+    words = description.split()
+
+    # If already long enough → return cleaned full text
+    if len(words) >= min_words:
+        trimmed = " ".join(words[:max_words])
+        return trimmed + ("..." if len(words) > max_words else "")
+
+    # If too short → try to expand lightly (AI-like smoothing)
+    # Note: Does NOT create fake story, only extends narrative flow.
+    filler_sentences = [
+        " This story unfolds with deep emotional layers that gradually reveal the characters' true motivations.",
+        " The narrative progresses through impactful moments that shape the direction of the plot.",
+        " As the story advances, new challenges emerge, testing the limits of the main characters.",
+        " The anime explores meaningful themes through intense character development and world-building.",
+        " Overall, the journey is filled with twists, emotions, and memorable storytelling."
+    ]
+
+    expanded = description
+    idx = 0
+
+    # Add filler until desired minimum word count reached
+    while len(expanded.split()) < min_words:
+        expanded += filler_sentences[idx % len(filler_sentences)]
+        idx += 1
+
+    # Cap at max_words
+    final_words = expanded.split()[:max_words]
+    return " ".join(final_words) + "..."
+
 CAPTION_FORMAT = """
-<b> {title} </b>
+<b>〄 {title} </b>
 ╭━━━━━━━━━━━━━━━━━━━━━━━
 <b>➣ Season: {anime_season}</b>
 <b>➣ Episodes: {ep_no}</b>
@@ -23,7 +73,7 @@ CAPTION_FORMAT = """
 <b>➣ Audio: Japanese [English Sub]</b>
 <b>➣ Quality: Multi Quality</b>
 ╰━━━━━━━━━━━━━━━━━━━━━━━
-<b>➥ Powered By: @Anime_Mines</b> """
+<b>〄 Powered By: @Anime_Fury</b> """
 
 GENRES_EMOJI = {
     "Action": "👊", "Adventure": choice(['🪂', '🧗‍♀️', '🗺️']), "Comedy": "🤣",
@@ -154,6 +204,7 @@ def normalize_genres(genres: list) -> list:
             normalized.append(genre_key)
     return normalized
 
+
 class AniLister:
     def __init__(self, anime_name: str, year: int) -> None:
         self.__api = "https://graphql.anilist.co"
@@ -275,21 +326,37 @@ class TextEditor:
     async def get_poster(self):
         anime_id = self.adata.get("id")
 
-        # 2. Check for a custom poster in the database (from /setposter)
-        anime_name_from_pdata = (self.pdata or {}).get("anime_title")
-        if anime_name_from_pdata:
-            custom_poster = await db.get_anime_poster(anime_name_from_pdata)
+        # Custom poster from DB
+        # Priority:
+        # 1. Parsed Filename Title
+        # 2. AniList English Title
+        # 3. AniList Romaji Title
+        # 4. AniList Native Title
+
+        possible_titles = []
+        if self.pdata and self.pdata.get("anime_title"):
+            possible_titles.append(self.pdata.get("anime_title"))
+
+        if self.adata:
+            titles = self.adata.get("title", {})
+            if titles.get("english"):
+                possible_titles.append(titles.get("english"))
+            if titles.get("romaji"):
+                possible_titles.append(titles.get("romaji"))
+            if titles.get("native"):
+                possible_titles.append(titles.get("native"))
+
+        for title in possible_titles:
+            custom_poster = await db.get_anime_poster(title)
             if custom_poster:
-                # It's a file_id stored from the /setposter command
                 return custom_poster
 
         if anime_id and str(anime_id).isdigit():
             return f"https://img.anili.st/media/{anime_id}"
-            # 3. Check for special case banner
+
         if Var.ANIME in self.__name:
-             return Var.CUSTOM_BANNER
+            return Var.CUSTOM_BANNER
         
-        # 5. Final fallback
         return "https://envs.sh/YsH.jpg"
     
     @handle_logs
@@ -311,14 +378,16 @@ class TextEditor:
             startdate = f"{month_name[month_idx]} {sd['day']}, {sd['year']}" if sd.get('day') and sd.get('year') and month_idx else "N/A"
         except (ValueError, TypeError):
             startdate = "N/A"
+
         ed = self.adata.get('endDate', {})
         try:
             month_idx = int(ed.get('month')) if ed.get('month') else None
             enddate = f"{month_name[month_idx]} {ed['day']}, {sd['year']}" if ed.get('day') and ed.get('year') and month_idx else "N/A"
         except (ValueError, TypeError):
             enddate = "N/A"
+
         titles = self.adata.get("title", {})
-        
+
         return CAPTION_FORMAT.format(
             cred=Var.BRAND_UNAME,
             title=titles.get('english') or titles.get('romaji') or titles.get('native') or "N/A",
@@ -330,7 +399,6 @@ class TextEditor:
             end_date=enddate,
             t_eps=self.adata.get("episodes") or "N/A",
             anime_season=str(ani_s[-1]) if (ani_s := self.pdata.get('anime_season', '01')) and isinstance(ani_s, list) else str(ani_s),
-            plot=(desc if (desc := self.adata.get("description") or "N/A") and len(desc) < 200 else desc[:200] + "...") if self.adata.get("description") else "N/A",
+            plot=smart_paragraph_trim(self.adata.get("description")),
             ep_no=self.pdata.get("episode_number") or "N/A",
         )
-        

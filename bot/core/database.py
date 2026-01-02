@@ -3,7 +3,6 @@ import re, os
 import pymongo
 import os
 import logging
-from datetime import datetime
 from config import Var
 from .reporter import rep
 
@@ -42,71 +41,6 @@ class Database:
         self.anime_posters = self.__db['anime_posters']
         # Anime collection (named using BOT_TOKEN)
         self.__animes = self.__db[f"animes_{Var.BOT_TOKEN.split(':')[0]}"]
-
-    # SHORTNER SETTINGS
-    async def set_shortner_settings(self, shortner_data: dict):
-        """Store shortner settings to database"""
-        await self.settings.update_one(
-            {"key": "shortner_settings"},
-            {"$set": {"value": shortner_data}},
-            upsert=True
-        )
-
-    async def get_shortner_settings(self) -> dict:
-        """Get shortner settings from database"""
-        data = await self.settings.find_one({"key": "shortner_settings"})
-        return data.get("value", {}) if data else {}
-
-    async def update_shortner_setting(self, key: str, value: str):
-        """Update a single shortner setting"""
-        current_data = await self.get_shortner_settings()
-        current_data[key] = value
-        await self.set_shortner_settings(current_data)
-
-    async def get_shortner_status(self) -> bool:
-        """Get shortner on/off status"""
-        settings = await self.get_shortner_settings()
-        return settings.get('enabled', True)  # Default is enabled
-
-    async def set_shortner_status(self, enabled: bool):
-        """Set shortner on/off status"""
-        await self.update_shortner_setting('enabled', enabled)
-
-    # VERIFICATION
-    async def get_verification_time(self) -> int:
-        """Get verification duration in seconds. Default 24 hours."""
-        settings = await self.get_shortner_settings()
-        return int(settings.get('verification_time', 86400))
-
-    async def set_verification_time(self, seconds: int):
-        await self.update_shortner_setting('verification_time', seconds)
-
-    async def verify_user(self, user_id: int):
-        """Mark user as verified with current timestamp"""
-        await self.user_data.update_one(
-            {'_id': user_id},
-            {'$set': {'last_verified': datetime.utcnow()}},
-            upsert=True
-        )
-
-    async def is_user_verified(self, user_id: int) -> bool:
-        """Check if user verification is valid"""
-        user = await self.user_data.find_one({'_id': user_id})
-        if not user or 'last_verified' not in user:
-            return False
-
-        last_verified = user['last_verified']
-        duration = await self.get_verification_time()
-
-        # Ensure last_verified is datetime
-        if not isinstance(last_verified, datetime):
-             # If it's not a datetime object (e.g. string), treat as expired or try to parse
-             return False
-
-        if (datetime.utcnow() - last_verified).total_seconds() < duration:
-            return True
-
-        return False
 
     # USER DATA
     async def present_user(self, user_id: int):
@@ -288,21 +222,19 @@ class Database:
             await rep.report(f"Error in save_anime for ani_id={ani_id}: {e}", "error", log=True)
             raise
 
-# ── ANIME → CHANNEL + CUSTOM POSTER MAPPING ───────────────────────────────
-    async def set_anime_channel(self, ani_id: int, channel_id: int, custom_poster: str = None):
+# ── ANIME → CHANNEL MAPPING ───────────────────────────────
+    async def set_anime_channel(self, ani_id: int, channel_id: int):
         """
-        Set channel + optional custom poster for anime
+        Set channel for anime
         """
         try:
             update_data = {'channel_id': channel_id}
-            if custom_poster is not None:
-                update_data['custom_poster'] = custom_poster
             await self.anime_channels.update_one(
                 {'ani_id': ani_id},
                 {'$set': update_data},
                 upsert=True
             )
-            await rep.report(f"Anime mapped: {ani_id} → {channel_id} | Poster: {bool(custom_poster)}", "info", log=True)
+            await rep.report(f"Anime mapped: {ani_id} → {channel_id}", "info", log=True)
         except Exception as e:
             await rep.report(f"set_anime_channel error: {e}", "error", log=True)
 
@@ -314,23 +246,13 @@ class Database:
             await rep.report(f"get_anime_channel error: {e}", "error", log=True)
             return None
 
-    async def get_custom_poster(self, ani_id: int) -> str | None:
-        """Get custom poster path for anime"""
-        try:
-            doc = await self.anime_channels.find_one({'ani_id': ani_id})
-            return doc.get('custom_poster') if doc else None
-        except Exception as e:
-            await rep.report(f"get_custom_poster error: {e}", "error", log=True)
-            return None
-
     async def get_all_anime_channels(self) -> list:
         try:
             docs = await self.anime_channels.find().to_list(length=None)
             return [
                 {
                     "ani_id": d["ani_id"],
-                    "channel_id": d["channel_id"],
-                    "custom_poster": d.get("custom_poster")
+                    "channel_id": d["channel_id"]
                 } for d in docs
             ]
         except Exception as e:
