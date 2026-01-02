@@ -15,12 +15,15 @@ from aiohttp import ClientSession
 from aiofiles import open as aiopen
 from aioshutil import rmtree as aiormtree
 from feedparser import parse as feedparse
-from pyrogram.types import InlineKeyboardButton
-from pyrogram.errors import MessageNotModified, FloodWait, ReplyMarkupInvalid, MessageIdInvalid
+from pyrogram.types import InlineKeyboardButton, Message
+from pyrogram.errors import MessageNotModified, FloodWait, ReplyMarkupInvalid, MessageIdInvalid, UserIsBlocked, PeerIdInvalid, InputUserDeactivated
 
 from bot.core.bot_instance import bot, bot_loop
 from config import Var, LOGS
 from .reporter import rep
+
+# Global executor to prevent resource exhaustion
+executor = ThreadPoolExecutor(max_workers=min(32, cpu_count() + 4))
 
 def handle_logs(func):
     @wraps(func)
@@ -33,7 +36,7 @@ def handle_logs(func):
 
 async def sync_to_async(func, *args, wait=True, **kwargs):
     pfunc = partial(func, *args, **kwargs)
-    future = bot_loop.run_in_executor(ThreadPoolExecutor(max_workers=cpu_count() * 125), pfunc)
+    future = bot_loop.run_in_executor(executor, pfunc)
     return await future if wait else future
     
 
@@ -52,7 +55,15 @@ async def getfeed(link, index=0):
     except Exception as e:
         LOGS.error(format_exc())
         return None
-        
+
+async def get_feed_entries(link, limit=5):
+    try:
+        feed = await sync_to_async(feedparse, link)
+        return feed.entries[:limit]
+    except Exception as e:
+        LOGS.error(format_exc())
+        return []
+
 @handle_logs
 async def aio_urldownload(link):
     async with ClientSession() as sess:
@@ -96,6 +107,8 @@ async def sendMessage(chat, text, buttons=None, get_error=False, **kwargs):
         return await sendMessage(chat, text, buttons, get_error, **kwargs)
     except ReplyMarkupInvalid:
         return await sendMessage(chat, text, None, get_error, **kwargs)
+    except (UserIsBlocked, PeerIdInvalid, InputUserDeactivated):
+        return None
     except Exception as e:
         await rep.report(format_exc(), "error")
         if get_error:
@@ -104,7 +117,7 @@ async def sendMessage(chat, text, buttons=None, get_error=False, **kwargs):
 
 async def editMessage(msg, text, buttons=None, get_error=False, **kwargs):
     try:
-        if not msg:
+        if not msg or isinstance(msg, str):
             return None
         kwargs.pop("reply_markup", None)
         return await msg.edit_text(
@@ -117,7 +130,7 @@ async def editMessage(msg, text, buttons=None, get_error=False, **kwargs):
         await rep.report(f, "warning")
         sleep(f.value * 1.2)
         return await editMessage(msg, text, buttons, get_error, **kwargs)
-    except (MessageNotModified, MessageIdInvalid):
+    except (MessageNotModified, MessageIdInvalid, UserIsBlocked, PeerIdInvalid, InputUserDeactivated):
         pass
     except Exception as e:
         await rep.report(format_exc(), "error")
