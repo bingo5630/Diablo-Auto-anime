@@ -93,7 +93,7 @@ class TorDownloader:
         self._torpath = "torrents"
 
     @handle_logs
-    async def download(self, torrent: str, name: str = None, progress_callback=None) -> str | None:
+    async def download(self, torrent: str, name: str = None, progress_callback=None, *args, **kwargs) -> str | None:
         # Ensure download directory exists
         if not await aiopath.isdir(self._downdir):
             await asyncio.to_thread(Path(self._downdir).mkdir, parents=True, exist_ok=True)
