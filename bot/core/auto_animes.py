@@ -355,7 +355,7 @@ async def get_animes(name, torrent, force=False):
             dl = None
             try:
                 # Pass callback to download
-                dl = await TorDownloader("./downloads").download(torrent, name, progress_callback)
+                dl = await TorDownloader("./downloads").download(torrent, name=name, progress_callback=progress_callback)
             except Exception as e:
                 await rep.report(f"Downloader error: {e}", "error", log=True)
                 dl = None
