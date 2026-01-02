@@ -5,7 +5,7 @@ class botmaker(object):
 
     FORCE_MSG = """ʜᴇʟʟᴏ {first}\n\n<b>ᴊᴏɪɴ ᴏᴜʀ ᴄʜᴀɴɴᴇʟs ᴀɴᴅ ᴛʜᴇɴ ᴄʟɪᴄᴋ ᴏɴ ʀᴇʟᴏᴀᴅ button ᴛᴏ ɢᴇᴛ ʏᴏᴜʀ ʀᴇǫᴜᴇꜱᴛᴇᴅ ꜰɪʟᴇ.</b>"""
 
-    HELP_TXT = """<b><blockquote>ᴛʜɪs ɪs ᴀɴ ғɪʟᴇ ᴛᴏ ʟɪɴᴋ ʙᴏᴛ ᴡᴏʀᴋɪɴɢ ғᴏʀ @Kitsune_Xe
+    HELP_TXT = """<b><blockquote>ᴛʜɪs ɪs ᴀɴ ғɪʟᴇ ᴛᴏ ʟɪɴᴋ ʙᴏᴛ ᴡᴏʀᴋɪɴɢ ғᴏʀ @Anime_Fury
 
 ❏ ʙᴏᴛ ᴄᴏᴍᴍᴀɴᴅs
 ├ /start : sᴛᴀʀᴛ ᴛʜᴇ ʙᴏᴛ
@@ -15,11 +15,9 @@ class botmaker(object):
 sɪᴍᴘʟʏ ᴄʟɪᴄᴋ ᴏɴ ʟɪɴᴋ ᴀɴᴅ sᴛᴀʀᴛ ᴛʜᴇ ʙᴏᴛ, ᴊᴏɪɴ ʙᴏᴛʜ ᴄʜᴀɴɴᴇʟs ᴀɴᴅ ᴛʀʏ ᴀɢᴀɪɴ — ᴛʜᴀᴛ'ꜱ ɪᴛ.....!</blockquote></b>"""
 
     ABOUT_TXT = """<b><blockquote>
-» ᴍᴏᴠɪᴇs: <a href="https://t.me/movie_unity">ᴍᴏᴠɪᴇ ᴜɴɪᴛʏ</a>
-» ᴡᴇʙsᴇʀɪᴇs: <a href="https://t.me/webseries_unity">ᴡᴇʙsᴇʀɪᴇs ᴜɴɪᴛʏ</a>
-» ᴀᴅᴜʟᴛ ᴄʜᴀɴɴᴇʟs: <a href="https://t.me/Cultured_infinite">ᴄᴜʟᴛᴜʀᴇᴅ ɪɴғɪɴɪᴛᴇ</a>
-» ᴏᴜʀ ᴄᴏᴍᴍᴜɴɪᴛʏ: <a href="https://t.me/PlayDise">ᴘʟᴀʏᴅɪsᴇ</a>
-» ᴅᴇᴠᴇʟᴏᴘᴇʀ: <a href="https://t.me/urr_sanjiii">𝐒ᴀɴᴊɪ 𝐒aᴍᴀ</a>
+◈ ᴄʀᴇᴀᴛᴏʀ: <a href="https://t.me/DoraShin_hlo">➳≛⃝Gojo</a>
+◈ ᴀɴɪᴍᴇ ᴄʜᴀɴɴᴇʟ: <a href="https://t.me/Anime_Fury">𝐀ɴɪᴍᴇ 𝐅ᴜʀʏ</a>
+◈ 𝐇ᴇɴᴛᴀɪ 𝐂ʜᴀɴɴᴇʟ: <a href="https://t.me/Adult_Fury">𝐀ᴅᴜʟᴛ 𝐅ᴜʀʏ</a>
 </blockquote></b>"""
 
     CMD_TXT = """<blockquote><b>» ᴀᴅᴍɪɴ ᴄᴏᴍᴍᴀɴᴅs:</b></blockquote>
