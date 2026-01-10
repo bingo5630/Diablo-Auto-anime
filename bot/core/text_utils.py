@@ -62,7 +62,7 @@ CAPTION_FORMAT = """
 <b>➣ Audio: Japanese [English Sub]</b>
 <b>➣ Quality: Multi Quality</b>
 ╰━━━━━━━━━━━━━━━━━━━━━━━
-<b>➥ Powered By: @Anime_Fury</b> """
+<b>➥ Powered By: @Anime_Mines</b> """
 GENRES_EMOJI = {
     "Action": "👊", "Adventure": choice(['🪂', '🧗‍♀️', '🗺️']), "Comedy": "🤣",
     "Drama": "🎭", "Ecchi": choice(['💋', '🥵']), "Fantasy": choice(['🧞', '🧙‍♂️', '🐉', '🌗']),
